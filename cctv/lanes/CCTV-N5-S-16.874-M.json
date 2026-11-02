@@ -1,0 +1,27 @@
+{
+  "divider": {
+    "p1": [
+      232,
+      236
+    ],
+    "p2": [
+      44,
+      57
+    ]
+  },
+  "line_abc": {
+    "A": 0.6895589737248123,
+    "B": -0.7242295366495236,
+    "C": 10.940488745131102
+  },
+  "band": {
+    "y_min": 17,
+    "y_max": 239
+  },
+  "frame_size": {
+    "w": 352,
+    "h": 240
+  },
+  "source_hint": "https://cctvn5.freeway.gov.tw/abs2mjpg/bmjpg?camera=fffe8f1f-fac6-4fef-8a71-01462fc8354d",
+  "created_at": "2025-12-13 02:17:15"
+}

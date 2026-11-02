@@ -1,0 +1,12 @@
+{
+  "gateA_y": 208,
+  "gateB_y": 74,
+  "distance_m": 20.0,
+  "roi": {
+    "y_min": 59,
+    "y_max": 223
+  },
+  "source_hint": "https://cctvn5.freeway.gov.tw/abs2mjpg/bmjpg?camera=894a824e-55f8-416b-8056-7d015f4dfb1a",
+  "cctvid": "CCTV-N5-N-25.247-M",
+  "created_at": "2025-12-12 23:02:41"
+}

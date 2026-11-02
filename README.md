@@ -1,14 +1,34 @@
-# Hsuehshan Tunnel Lane Choice Analysis
+# Hsuehshan Tunnel Lane Advisor
 
 **English** | [繁體中文](README.zh-TW.md)
 
-Which lane should you take into the Hsuehshan Tunnel? Lane changes are prohibited inside the 12.9 km tunnel on National Freeway 5 in Taiwan, so a driver picks a lane once, at the entrance. This project uses one year of open vehicle detector (VD) data to model when the inner lane is faster, using only the current occupancy of the two lanes.
+Which lane should you take into the Hsuehshan Tunnel? Lane changes are prohibited inside the 12.9 km tunnel on National Freeway 5 in Taiwan, so a driver picks a lane once, at the entrance. This project looks at the tunnel's traffic from two sources:
 
-Course project for *Computational Mathematics* (December 2025).
+1. **Live CCTV.** Vehicles in the tunnel's public camera feeds are detected with YOLOv8 and tracked with DeepSORT. Virtual gates measure each vehicle's speed, and a divider line assigns it to a lane.
+2. **One year of vehicle detector (VD) data**, 258,399 records. These train a logistic regression that predicts, from the current occupancy of the two lanes, whether the inner lane will be faster.
+
+December 2025. The VD analysis started as a *Computational Mathematics* course assignment.
+
+![Vehicle detection and tracking on six tunnel cameras](docs/cctv_tracking.png)
+
+## Part 1 · CCTV vehicle tracking
+
+Twelve cameras inside the tunnel (`cctvn5.freeway.gov.tw`, 352×240 pixels) were calibrated by hand: 6 northbound and 6 southbound, km 16.9 – 26.4. Each camera has a JSON file in [`cctv/`](cctv/):
+
+| File | Fields | Use |
+|---|---|---|
+| `gates/<camera>.json` (12 cameras) | `gateA_y`, `gateB_y`: y-coordinates of two horizontal virtual lines; `distance_m`: real distance between them (15–50 m); `band` (named `roi` in five northbound files): the y-range where detections count | A vehicle's speed is `distance_m` divided by the time between its track crossing gate A and gate B |
+| `lanes/<camera>.json` (6 southbound cameras) | `divider.p1`, `divider.p2`: two points on the lane divider; `line_abc`: the line A·x + B·y + C = 0 through them, with (A, B) a unit normal | A·x + B·y + C is the signed pixel distance from the divider, so its sign gives a vehicle's lane |
+
+The camera ID encodes direction and position, for example `CCTV-N5-S-16.874-M` = National Freeway 5, southbound, km 16.874. Each file also keeps the stream URL (`source_hint`) and when it was calibrated.
+
+The detection and tracking script itself is not included in this repository; `cctv/` holds the per-camera calibration it uses.
+
+## Part 2 · Lane choice model from VD data
 
 ![Decision boundary of the lane choice model](figures/decision_boundary.png)
 
-## Data
+### Data
 
 | | |
 |---|---|
@@ -24,7 +44,7 @@ The parsed dataset is included as [`data/tunnel_data_final.csv.gz`](data/tunnel_
 
 ![Mean speed by hour for each lane](figures/lane_speed_by_hour.png)
 
-## Method
+### Method
 
 - **Label.** `Target = 1` (take the inner lane) when the inner lane is faster than the outer lane by more than 3 km/h; otherwise `Target = 0`.
 - **Features.** Inner-lane occupancy *x*₁ and outer-lane occupancy *x*₂ (%), which a driver could see on a live traffic map.
@@ -32,7 +52,7 @@ The parsed dataset is included as [`data/tunnel_data_final.csv.gz`](data/tunnel_
 
 $$z = \beta_0 + \beta_1 x_1 + \beta_2 x_2, \qquad P(\text{inner lane}) = \frac{1}{1 + e^{-z}}$$
 
-## Results
+### Results
 
 | Metric | Value |
 |---|---|
@@ -53,7 +73,7 @@ The decision boundary (P = 0.5) is **x₂ = −7.58 + 1.47·x₁**. Take the inn
 
 - The inner/outer mapping is inferred from the data, not from documentation.
 - The random split mixes neighbouring 15-minute records and detectors between train and test, so the accuracy is probably optimistic. A split by date would be a stricter test.
-- Two occupancy values explain only part of the speed difference. Hour of day, direction and detector position are obvious next features.
+- Two occupancy values explain only part of the speed difference. Hour of day, direction and detector position are obvious next features, and so are per-lane speeds measured from the CCTV feeds.
 
 ## Run it
 
@@ -71,6 +91,9 @@ python 01_parse_xml.py        # → data/tunnel_data_final.csv.gz
 ## Project structure
 
 ```
+├── cctv/
+│   ├── gates/              speed-measurement gates for 12 tunnel cameras
+│   └── lanes/              lane dividers for 6 southbound cameras
 ├── 00_download_data.py     download VDLive XML from the Freeway Bureau archive
 ├── 01_parse_xml.py         filter tunnel detectors and lanes, write the CSV (multi-process)
 ├── 02_train_model.py       logistic regression, metrics and interpretation
@@ -78,5 +101,6 @@ python 01_parse_xml.py        # → data/tunnel_data_final.csv.gz
 ├── common.py               paths, lane mapping, data loading, model fitting
 ├── data/
 │   └── tunnel_data_final.csv.gz
-└── figures/
+├── figures/
+└── docs/
 ```
