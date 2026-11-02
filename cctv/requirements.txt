@@ -1,0 +1,6 @@
+# CCTV 追蹤（cctv/track.py）
+ultralytics>=8.1
+deep-sort-realtime>=1.3
+opencv-python>=4.8
+requests>=2.31
+truststore>=0.9   # 使用系統憑證庫連線高公局 CCTV

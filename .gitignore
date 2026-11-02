@@ -7,3 +7,9 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
+
+# CCTV tracking outputs and downloaded YOLO weights
+runs/
+*.pt
+*.mp4
+.pytest_cache/
