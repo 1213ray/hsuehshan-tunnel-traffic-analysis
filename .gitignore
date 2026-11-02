@@ -1,0 +1,9 @@
+# Raw VD XML downloaded by 00_download_data.py (~1 GB)
+data/vd_xml/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
